@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ai-portal-gateway
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cloud:
+    gateway:
+      routes:
+        - id: ai-service-route
+          uri: https://api.example-bank.com
+          predicates:
+            - Path=/v1/ai/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 150
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@apiKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: aiCircuitBreaker
+                fallbackUri: forward:/fallback
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+  timelimiter:
+    instances:
+      aiCircuitBreaker:
+        timeoutDuration: 60s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
