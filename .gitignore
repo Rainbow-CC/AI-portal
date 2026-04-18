@@ -33,3 +33,6 @@ ai-portal-ui/dist/
 
 # Gemini
 .gemini/tmp/
+
+# Custom Ignore Settings
+docs/local/
