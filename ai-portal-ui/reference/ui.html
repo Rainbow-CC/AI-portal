@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信托 AI 技术中台 | AI Portal 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', -apple-system, sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        .sidebar-active { background-color: #EEF2FF; color: #0052D9; border-right: 3px solid #0052D9; }
+        .hidden { display: none; }
+        .card { background: white; border: 1px solid #E2E8F0; border-radius: 4px; }
+        .tech-blue { color: #0052D9; }
+        .bg-tech-blue { background-color: #0052D9; }
+        .animate-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+<!-- 1. 侧边导航栏 -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0">
+    <div class="p-6 flex items-center gap-3 border-b border-slate-50">
+        <div class="w-8 h-8 bg-tech-blue rounded-sm flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <span class="text-lg font-bold tech-blue">AI Portal</span>
+    </div>
+
+    <nav class="flex-grow mt-4 px-3 space-y-1">
+        <button onclick="showView('dashboard')" id="btn-dashboard" class="sidebar-active w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-slate-50">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            数据大盘
+        </button>
+        <button onclick="showView('capability')" id="btn-capability" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+            能力地图
+        </button>
+        <button onclick="showView('cases')" id="btn-cases" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            AI 案例汇总
+        </button>
+        <button onclick="showView('developer')" id="btn-developer" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+            开发者中心
+        </button>
+        <button onclick="showView('monitoring')" id="btn-monitoring" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            监控审计
+        </button>
+    </nav>
+
+    <div class="p-6 border-t border-slate-100">
+        <div class="flex items-center gap-3 p-2 rounded-sm bg-slate-50">
+            <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-400 italic">User</div>
+            <div class="text-xs">
+                <p class="font-bold">Admin_Trust</p>
+                <p class="text-slate-400">系统管理员</p>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- 主体内容区 -->
+<main class="flex-grow flex flex-col min-w-0 overflow-hidden">
+
+    <!-- 头部 Breadcrumb -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
+        <div class="flex items-center gap-2 text-sm text-slate-400">
+            <span>控制台</span>
+            <span class="text-slate-300">/</span>
+            <span id="breadcrumb-active" class="text-slate-900 font-medium">数据大盘</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                系统连接正常
+            </div>
+            <button class="p-2 text-slate-400 hover:text-tech-blue"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg></button>
+        </div>
+    </header>
+
+    <!-- 视图容器 -->
+    <div class="flex-grow overflow-y-auto p-8">
+
+        <!-- 视图 1: 仪表盘 (Dashboard) -->
+        <div id="view-dashboard" class="space-y-8 animate-in">
+            <!-- 顶层核心指标 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="card p-6">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">今日累计请求</p>
+                    <p class="text-3xl font-bold mt-2">156,204</p>
+                    <p class="text-xs text-green-500 mt-2 flex items-center gap-1">↑ 12.5% <span class="text-slate-400 font-normal">较昨日</span></p>
+                </div>
+                <div class="card p-6">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">网关运行状态</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-3xl font-bold">稳定运行</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 font-mono">Uptime: 142d 5h</p>
+                </div>
+                <div class="card p-6">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">母行能力集成</p>
+                    <p class="text-3xl font-bold mt-2">24 <span class="text-sm font-normal text-slate-400">核</span></p>
+                    <p class="text-xs text-slate-400 mt-2">含 4 个 Beta 阶段能力</p>
+                </div>
+                <div class="card p-6 border-l-4 border-tech-blue">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">系统平均可用性</p>
+                    <p class="text-3xl font-bold mt-2 text-tech-blue">99.98%</p>
+                    <p class="text-xs text-slate-400 mt-2">实时监控统计</p>
+                </div>
+            </div>
+
+            <!-- 中层：调用趋势 -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold">网关调用趋势 (近7日)</h3>
+                    <div class="flex gap-4 items-center">
+                        <span class="flex items-center gap-1.5 text-xs text-slate-400"><div class="w-2 h-2 bg-tech-blue rounded-full"></div> 成功请求</span>
+                        <span class="flex items-center gap-1.5 text-xs text-slate-400"><div class="w-2 h-2 bg-slate-200 rounded-full"></div> 异常拦截</span>
+                    </div>
+                </div>
+                <!-- 模拟趋势图 -->
+                <div class="h-64 w-full flex items-end gap-1">
+                    <div class="flex-grow bg-blue-50 border-t-2 border-tech-blue h-[60%] hover:h-[65%] transition-all cursor-pointer relative group">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-20">12.4k reqs</div>
+                    </div>
+                    <div class="flex-grow bg-blue-50 border-t-2 border-tech-blue h-[70%] hover:h-[75%] transition-all cursor-pointer relative group">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-20">14.1k reqs</div>
+                    </div>
+                    <div class="flex-grow bg-blue-50 border-t-2 border-tech-blue h-[65%] hover:h-[70%] transition-all cursor-pointer relative group">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-20">13.2k reqs</div>
+                    </div>
+                    <div class="flex-grow bg-blue-50 border-t-2 border-tech-blue h-[85%] hover:h-[90%] transition-all cursor-pointer relative group">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-20">16.8k reqs</div>
+                    </div>
+                    <div class="flex-grow bg-blue-50 border-t-2 border-tech-blue h-[95%] hover:h-[100%] transition-all cursor-pointer relative group">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-20">19.2k reqs</div>
+                    </div>
+                    <div class="flex-grow bg-blue-50 border-t-2 border-tech-blue h-[75%] hover:h-[80%] transition-all cursor-pointer relative group">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-20">15.4k reqs</div>
+                    </div>
+                    <div class="flex-grow bg-tech-blue/20 border-t-2 border-tech-blue h-[90%] relative group">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-tech-blue text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-20">今日: 18.2k</div>
+                    </div>
+                </div>
+                <div class="flex justify-between mt-4 text-[10px] text-slate-400 font-mono">
+                    <span>03/28</span><span>03/29</span><span>03/30</span><span>03/31</span><span>04/01</span><span>04/02</span><span>04/03</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- API 调用排行 -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-sm">近7日 API 调用排行</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5"><span class="font-medium">合同要素提取</span><span class="font-mono text-slate-500 text-[10px]">42,012 次</span></div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-tech-blue h-full" style="width: 90%;"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5"><span class="font-medium">多模态 OCR</span><span class="font-mono text-slate-500 text-[10px]">31,550 次</span></div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-tech-blue h-full opacity-80" style="width: 70%;"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5"><span class="font-medium">语义意图分析</span><span class="font-mono text-slate-500 text-[10px]">18,200 次</span></div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-tech-blue h-full opacity-60" style="width: 45%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 应用发起排行 -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-sm mb-6">近7日 应用请求发起排行</h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="flex items-center gap-4 p-2 hover:bg-slate-50 rounded transition-colors">
+                            <span class="w-5 h-5 flex items-center justify-center bg-tech-blue text-white rounded-full text-[10px] font-bold">1</span>
+                            <span class="flex-grow font-medium">信贷审批系统</span>
+                            <span class="font-mono text-slate-400">82.4k</span>
+                        </div>
+                        <div class="flex items-center gap-4 p-2 hover:bg-slate-50 rounded transition-colors border-t border-slate-50 pt-3">
+                            <span class="w-5 h-5 flex items-center justify-center bg-blue-100 text-tech-blue rounded-full text-[10px] font-bold">2</span>
+                            <span class="flex-grow font-medium text-slate-700">风险合规平台</span>
+                            <span class="font-mono text-slate-400">45.1k</span>
+                        </div>
+                        <div class="flex items-center gap-4 p-2 hover:bg-slate-50 rounded transition-colors border-t border-slate-50 pt-3">
+                            <span class="w-5 h-5 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold">3</span>
+                            <span class="flex-grow font-medium text-slate-600">移动掌上信托 APP</span>
+                            <span class="font-mono text-slate-400">22.8k</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 视图 2: 能力地图 (Capability Map) -->
+        <div id="view-capability" class="hidden space-y-6 animate-in">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold">AI 能力地图</h2>
+                    <p class="text-xs text-slate-400 mt-1">母行原子能力在信托业务场景的集成分发</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card p-6 hover:shadow-lg transition-all group">
+                    <div class="w-10 h-10 bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-tech-blue transition-colors"><svg class="w-6 h-6 tech-blue group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+                    <h4 class="font-bold mb-2 text-sm text-slate-800">合同要素提取</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-4 h-12">精准识别复杂长文本合同中的关键条款、交易标的、违约责任等核心要素。</p>
+                    <div class="pt-4 border-t border-slate-50 flex gap-4 text-[10px] font-bold">
+                        <a href="#" class="tech-blue hover:underline">在线调试</a>
+                        <a href="#" class="text-slate-400 hover:text-slate-600">技术文档</a>
+                    </div>
+                </div>
+                <div class="card p-6 hover:shadow-lg transition-all group">
+                    <div class="w-10 h-10 bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-tech-blue transition-colors"><svg class="w-6 h-6 tech-blue group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg></div>
+                    <h4 class="font-bold mb-2 text-sm text-slate-800">多模态 OCR</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-4 h-12">适配母行下发的通用证照、财务报表与非标手工票据高精度识别模型。</p>
+                    <div class="pt-4 border-t border-slate-50 flex gap-4 text-[10px] font-bold">
+                        <a href="#" class="tech-blue hover:underline">在线调试</a>
+                        <a href="#" class="text-slate-400 hover:text-slate-600">技术文档</a>
+                    </div>
+                </div>
+                <div class="card p-6 hover:shadow-lg transition-all group">
+                    <div class="w-10 h-10 bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-tech-blue transition-colors"><svg class="w-6 h-6 tech-blue group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg></div>
+                    <h4 class="font-bold mb-2 text-sm text-slate-800">语义意图识别</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-4 h-12">针对金融语境进行微调，支持复杂对话场景下的客户意图精准锚定。</p>
+                    <div class="pt-4 border-t border-slate-50 flex gap-4 text-[10px] font-bold">
+                        <a href="#" class="tech-blue hover:underline">在线调试</a>
+                        <a href="#" class="text-slate-400 hover:text-slate-600">技术文档</a>
+                    </div>
+                </div>
+                <div class="card p-6 hover:shadow-lg transition-all group border-dashed">
+                    <div class="w-10 h-10 bg-slate-50 flex items-center justify-center mb-4"><svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg></div>
+                    <p class="text-[10px] text-slate-400 font-medium">更多原子能力<br>正在集成中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 视图 3: AI 案例汇总 (Cases) -->
+        <div id="view-cases" class="hidden space-y-8 animate-in">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold">AI 案例汇总</h2>
+                    <p class="text-xs text-slate-400 mt-1">探索 AI 能力在信托各业务线条的落地实践</p>
+                </div>
+                <div class="flex bg-white border border-slate-200 rounded p-1">
+                    <button class="px-4 py-1.5 text-[10px] bg-tech-blue text-white rounded-sm font-medium">全部案例</button>
+                    <button class="px-4 py-1.5 text-[10px] text-slate-500 hover:bg-slate-50 transition-colors">风险合规</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 案例卡片 1 -->
+                <div onclick="showCaseDetail('contract')" class="card group cursor-pointer hover:border-tech-blue transition-all overflow-hidden">
+                    <div class="h-40 bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent"></div>
+                        <svg class="w-16 h-16 text-slate-300 group-hover:scale-110 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="bg-blue-100 text-tech-blue text-[10px] px-2 py-0.5 rounded font-bold">风险合规</span>
+                            <span class="text-[10px] text-slate-400">2026-03-20</span>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-2 group-hover:text-tech-blue transition-colors">信托合同自动合规审计系统</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">利用 NLP 与 OCR 组合能力，实现合同签署前的自动对标与风险项高亮显示。</p>
+                    </div>
+                </div>
+                <!-- 案例卡片 2 -->
+                <div onclick="showCaseDetail('aml')" class="card group cursor-pointer hover:border-tech-blue transition-all overflow-hidden">
+                    <div class="h-40 bg-slate-100 flex items-center justify-center relative">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent"></div>
+                        <svg class="w-16 h-16 text-slate-300 group-hover:scale-110 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded font-bold">运营大盘</span>
+                            <span class="text-[10px] text-slate-400">2026-02-15</span>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-2 group-hover:text-tech-blue transition-colors">智能反洗钱资金穿透分析</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">基于图计算与关联模型，自动穿透非标交易中的复杂资金链路。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 视图 4: 案例详情页 (SPA 页面) -->
+        <div id="view-case-detail" class="hidden space-y-8 animate-in">
+            <button onclick="showView('cases')" class="flex items-center gap-2 text-xs text-tech-blue hover:underline mb-4 font-bold uppercase">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                返回案例列表
+            </button>
+            <div class="flex flex-col lg:flex-row gap-8">
+                <div class="lg:w-2/3 space-y-8">
+                    <section class="card p-8">
+                        <h1 id="detail-title" class="text-3xl font-bold mb-6">信托合同自动合规审计系统</h1>
+                        <div class="flex gap-4 mb-8">
+                            <div class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] rounded-full">业务线条：风险管理部</div>
+                            <div class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] rounded-full">上线时间：2026年Q1</div>
+                        </div>
+                        <div class="text-sm text-slate-600 leading-relaxed space-y-4">
+                            <h4 class="font-bold text-slate-900 text-lg">业务背景</h4>
+                            <p>在传统信托业务中，法务与风险管理人员需要花费巨大精力进行人工对标，容易出现条款遗漏或逻辑错误。AI 介入后，大幅缩短了审核链路。</p>
+                            <h4 class="font-bold text-slate-900 text-lg pt-4">解决方案</h4>
+                            <p>中台提供了“合同要素提取”能力，自动识别合同中的 50 多个核心维度（如回购条款、抵押率等），并自动比对母行标准库进行合规性提示。</p>
+                        </div>
+                    </section>
+                    <section class="card p-8">
+                        <h4 class="font-bold text-slate-900 text-lg mb-6">应用成效</h4>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="p-6 bg-slate-50 rounded text-center">
+                                <p class="text-[10px] text-slate-400 font-bold mb-1">单份合同耗时 (Before)</p>
+                                <p class="text-2xl font-bold text-slate-500">60-90 min</p>
+                            </div>
+                            <div class="p-6 bg-blue-50 rounded text-center border border-blue-100">
+                                <p class="text-[10px] text-tech-blue font-bold mb-1">单份合同耗时 (After)</p>
+                                <p class="text-2xl font-bold tech-blue">< 2 min</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <aside class="lg:w-1/3 space-y-6">
+                    <div class="card p-6">
+                        <h4 class="font-bold mb-4 text-xs text-slate-400 uppercase">调用的母行原子能力</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-3 bg-slate-50 border rounded-sm">
+                                <div class="w-8 h-8 bg-white flex items-center justify-center rounded"><svg class="w-4 h-4 tech-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+                                <div class="text-[10px]"><p class="font-bold">Contract Elements v3</p><p class="text-slate-400">合同要素提取</p></div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-slate-50 border rounded-sm">
+                                <div class="w-8 h-8 bg-white flex items-center justify-center rounded"><svg class="w-4 h-4 tech-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg></div>
+                                <div class="text-[10px]"><p class="font-bold">Multimodal OCR</p><p class="text-slate-400">多模态识别</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- 视图 5: 开发者中心 (Developer Center) -->
+        <div id="view-developer" class="hidden space-y-6 animate-in">
+            <h2 class="text-2xl font-bold mb-8">开发者集成中心</h2>
+            <div class="card flex flex-col md:flex-row h-[650px] overflow-hidden">
+                <div class="w-64 border-r border-slate-200 bg-slate-50 overflow-y-auto">
+                    <div class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">API 列表导航</div>
+                    <div class="text-sm">
+                        <div class="p-4 bg-white border-l-4 border-tech-blue text-tech-blue font-bold shadow-sm">合同要素提取 (V2)</div>
+                        <div class="p-4 hover:bg-white transition-colors cursor-pointer text-slate-600 border-b border-slate-100/50">多模态 OCR 接口</div>
+                        <div class="p-4 hover:bg-white transition-colors cursor-pointer text-slate-600 border-b border-slate-100/50">语义分析与分词</div>
+                        <div class="p-4 hover:bg-white transition-colors cursor-pointer text-slate-600 border-b border-slate-100/50">自动研报生成</div>
+                        <div class="p-4 hover:bg-white transition-colors cursor-pointer text-slate-600 border-b border-slate-100/50">音频转写服务</div>
+                    </div>
+                </div>
+                <div class="flex-grow p-8 bg-white overflow-y-auto">
+                    <div class="max-w-3xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <h3 class="text-xl font-bold">合同要素提取 API</h3>
+                            <span class="bg-blue-100 text-tech-blue text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">Production</span>
+                        </div>
+                        <p class="text-sm text-slate-500 mb-8 leading-relaxed">该接口主要面向信托业务中繁杂的合同审核场景。通过母行下发的深度 Transformer 模型，自动解析 PDF/图片格式合同，返回结构化 JSON 数据。支持自定义提取字段与规则校验。</p>
+
+                        <div class="space-y-8">
+                            <section>
+                                <h5 class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">请求地址 (AI Gateway)</h5>
+                                <div class="bg-slate-900 text-blue-300 p-4 rounded-sm font-mono text-xs flex justify-between items-center group">
+                                    <span>POST /ai-gateway/v1/extract/elements</span>
+                                    <button class="text-slate-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">Copy</button>
+                                </div>
+                            </section>
+                            <section>
+                                <h5 class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">Java 调用示例</h5>
+                                <div class="bg-slate-900 rounded-sm overflow-hidden">
+                                    <div class="flex gap-1 p-2 bg-slate-800 border-b border-slate-700">
+                                        <div class="w-2 h-2 rounded-full bg-red-500/30"></div>
+                                        <div class="w-2 h-2 rounded-full bg-yellow-500/30"></div>
+                                        <div class="w-2 h-2 rounded-full bg-green-500/30"></div>
+                                    </div>
+                                    <pre class="p-4 text-[11px] font-mono leading-relaxed text-slate-300">
+<span class="text-blue-400">RestTemplate</span> restTemplate = <span class="text-blue-400">new</span> <span class="text-blue-400">RestTemplate</span>();
+<span class="text-blue-400">HttpHeaders</span> headers = <span class="text-blue-400">new</span> <span class="text-blue-400">HttpHeaders</span>();
+headers.set(<span class="text-orange-300">"X-App-ID"</span>, <span class="text-orange-300">"TRUST_SYSTEM_01"</span>);
+
+<span class="text-blue-400">Map</span>&lt;String, Object&gt; body = <span class="text-blue-400">new</span> <span class="text-blue-400">HashMap</span>&lt;&gt;();
+body.put(<span class="text-orange-300">"file"</span>, base64EncodedPdf);
+
+<span class="text-blue-400">HttpEntity</span>&lt;...&gt; req = <span class="text-blue-400">new</span> <span class="text-blue-400">HttpEntity</span>&lt;&gt;(body, headers);
+<span class="text-blue-400">ResponseEntity</span>&lt;String&gt; resp = restTemplate.postForEntity(url, req, String.class);
+                                         </pre>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 视图 6: 监控审计 (Monitoring Placeholder) -->
+        <div id="view-monitoring" class="hidden animate-in">
+            <div class="flex flex-col items-center justify-center h-96 text-slate-400">
+                <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <p class="text-xs uppercase font-bold tracking-widest">审计页面开发中</p>
+                <p class="text-[10px] mt-2">预计 2026 年 Q3 上线监控链路穿透功能</p>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    function showView(viewId) {
+        const views = ['dashboard', 'capability', 'cases', 'case-detail', 'developer', 'monitoring'];
+        views.forEach(v => {
+            const el = document.getElementById('view-' + v);
+            if (el) el.classList.add('hidden');
+        });
+
+        const buttons = ['dashboard', 'capability', 'cases', 'developer', 'monitoring'];
+        buttons.forEach(b => {
+            const btn = document.getElementById('btn-' + b);
+            if (btn) {
+                btn.classList.remove('sidebar-active');
+                btn.classList.add('text-slate-600');
+            }
+        });
+
+        document.getElementById('view-' + viewId).classList.remove('hidden');
+        if (viewId !== 'case-detail') {
+            const activeBtn = document.getElementById('btn-' + viewId);
+            if (activeBtn) {
+                activeBtn.classList.add('sidebar-active');
+                activeBtn.classList.remove('text-slate-600');
+            }
+        }
+
+        const names = {
+            'dashboard': '数据大盘',
+            'capability': '能力地图',
+            'cases': 'AI 案例汇总',
+            'case-detail': '案例详情',
+            'developer': '开发者中心',
+            'monitoring': '监控审计'
+        };
+        document.getElementById('breadcrumb-active').innerText = names[viewId];
+    }
+
+    function showCaseDetail(caseId) {
+        const titles = {
+            'contract': '信托合同自动合规审计系统',
+            'aml': '智能反洗钱资金穿透分析'
+        };
+        document.getElementById('detail-title').innerText = titles[caseId] || '案例详情';
+        showView('case-detail');
+    }
+</script>
+</body>
+</html>

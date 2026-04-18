@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background-color: #F8FAFC;
+  color: #1E293B;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-active {
+  background-color: #EEF2FF;
+  color: #0052D9;
+  border-right: 3px solid #0052D9;
+}
+
+.card {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+}
