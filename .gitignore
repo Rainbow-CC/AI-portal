@@ -37,3 +37,4 @@ ai-portal-ui/dist/
 # Custom Ignore Settings
 docs/local/
 logs/
+docs/temp/
