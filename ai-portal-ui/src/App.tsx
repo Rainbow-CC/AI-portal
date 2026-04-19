@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './index.css';
 import Dashboard from './pages/Dashboard';
 import Capability from './pages/Capability';
@@ -13,6 +13,30 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [breadcrumb, setBreadcrumb] = useState('数据大盘');
   const [caseId, setCaseId] = useState<'contract' | 'aml' | null>(null);
+
+  // 健康状态: 'UP' | 'DOWN' | 'LOADING'
+  const [healthStatus, setHealthStatus] = useState<'UP' | 'DOWN' | 'LOADING'>('LOADING');
+
+  const checkHealth = async () => {
+    setHealthStatus('LOADING');
+    try {
+      const res = await fetch(`/actuator/health?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setHealthStatus(data.status === 'UP' ? 'UP' : 'DOWN');
+      } else {
+        setHealthStatus('DOWN');
+      }
+    } catch (err) {
+      setHealthStatus('DOWN');
+    }
+  };
+
+  useEffect(() => {
+    checkHealth();
+    const timer = setInterval(checkHealth, 60000); // 1分钟轮询
+    return () => clearInterval(timer);
+  }, []);
 
   const showView = (view: View, label?: string) => {
     setCurrentView(view);
@@ -85,10 +109,22 @@ function App() {
             <span className="text-slate-900 font-medium">{breadcrumb}</span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              系统连接正常
-            </div>
+            <button 
+              onClick={checkHealth}
+              title="点击手动刷新系统状态"
+              className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-full transition-all border ${
+                healthStatus === 'UP' 
+                  ? 'text-green-600 bg-green-50 border-green-100 hover:bg-green-100 shadow-sm' 
+                  : healthStatus === 'DOWN'
+                    ? 'text-red-600 bg-red-50 border-red-100 hover:bg-red-100 shadow-sm'
+                    : 'text-slate-400 bg-slate-50 border-slate-100 animate-pulse'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${
+                healthStatus === 'UP' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : healthStatus === 'DOWN' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-slate-300'
+              }`}></span>
+              {healthStatus === 'UP' ? '系统连接正常' : healthStatus === 'DOWN' ? '网关连接断开' : '正在检测状态...'}
+            </button>
             <button className="p-2 text-slate-400 hover:text-tech-blue">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />

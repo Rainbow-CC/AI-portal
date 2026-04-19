@@ -1,6 +1,20 @@
 import { useState } from 'react';
 
+// API 定义类型
+interface ApiItem {
+  id: string;
+  title: string;
+  method: 'POST' | 'GET';
+  path: string;
+  tag: string;
+  description: string;
+}
+
 const Developer = () => {
+  // 控制哪个 API 卡片展开
+  const [expandedId, setExpandedId] = useState<string | null>('vision-api');
+
+  // --- Vision API 专用状态 ---
   const [apiKey, setApiKey] = useState('');
   const [sessionId, setSessionId] = useState(`sess-${Date.now()}`);
   const [userMessage, setUserMessage] = useState('提取图片中的核心信息');
@@ -8,222 +22,242 @@ const Developer = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
 
-  // 处理本地图片选择并转换为 Base64
+  const apiList: ApiItem[] = [
+    {
+      id: 'vision-api',
+      title: '多模态图片问答接口',
+      method: 'POST',
+      path: '/api/chat/vision',
+      tag: 'Vision',
+      description: '该接口利用大模型的多模态能力，对传入的图片进行深度理解，并回答用户关于该图片的问题。适用于证件识别、报表解析、场景问答等业务场景。'
+    },
+    {
+      id: 'text-extract',
+      title: '合同要素提取 (Beta)',
+      method: 'POST',
+      path: '/api/extract/elements',
+      tag: 'NLP',
+      description: '自动解析 PDF/图片格式合同，返回结构化 JSON 数据。'
+    }
+  ];
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageBase64(reader.result as string);
-      };
+      reader.onloadend = () => setImageBase64(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSend = async () => {
+  const handleSendVision = async () => {
     if (!apiKey) return alert("请填写 X-API-KEY");
     if (!imageBase64) return alert("请提供图片 Base64");
-    
     setLoading(true);
     setResponse(null);
     try {
-      // 配合 Vite Proxy 发起请求
       const res = await fetch('/api/chat/vision', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': apiKey
-        },
-        body: JSON.stringify({
-          imageBase64: imageBase64,
-          sessionid: sessionId,
-          userMessage: userMessage
-        })
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': apiKey },
+        body: JSON.stringify({ imageBase64, sessionid: sessionId, userMessage })
       });
-      
       const data = await res.json();
       setResponse(data);
     } catch (err: any) {
-      setResponse({ error: err.message || "请求异常，请检查网络或跨域配置" });
+      setResponse({ error: err.message || "请求失败" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="animate-fade-in flex flex-col h-full w-full">
-      <h2 className="text-2xl font-bold mb-6 text-slate-800">开发者集成中心</h2>
-      
-      <div className="flex flex-col lg:flex-row gap-6 flex-grow overflow-hidden">
-        {/* 左侧：接口文档说明 */}
-        <div className="lg:w-1/2 flex flex-col gap-6 overflow-y-auto pr-2 pb-4">
-          <div className="card p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-lg font-bold text-slate-800">多模态图片问答 API</h3>
-              <span className="bg-blue-100 text-tech-blue text-[10px] px-2 py-0.5 rounded font-bold uppercase">Vision</span>
-            </div>
-            <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-              该接口利用大模型的多模态能力，对传入的图片进行深度理解，并回答用户关于该图片的问题。适用于证件识别、报表解析、场景问答等业务场景。
-            </p>
-            
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Endpoint</h4>
-                <div className="bg-slate-50 border border-slate-200 p-3 rounded text-sm font-mono text-slate-700 flex items-center gap-2">
-                  <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-[10px] font-bold">POST</span>
-                  /api/chat/vision
-                </div>
-              </div>
+    <div className="animate-fade-in flex flex-col w-full pb-20">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-slate-800">开发者集成中心</h2>
+        <p className="text-sm text-slate-400 mt-1">在线查看 API 文档并进行即时功能调试</p>
+      </div>
 
-              <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">请求头 (Headers)</h4>
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-500">
-                      <th className="py-2 font-medium">参数名</th>
-                      <th className="py-2 font-medium">必填</th>
-                      <th className="py-2 font-medium">说明</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-slate-100">
-                      <td className="py-2 font-mono text-xs text-slate-700">X-API-KEY</td>
-                      <td className="py-2 text-red-500 text-xs">是</td>
-                      <td className="py-2 text-slate-500 text-xs">系统鉴权与限流标识</td>
-                    </tr>
-                  </tbody>
-                </table>
+      <div className="space-y-6">
+        {apiList.map((api) => (
+          <div key={api.id} className={`card overflow-hidden transition-all duration-300 ${expandedId === api.id ? 'ring-2 ring-blue-500/20 shadow-xl' : 'hover:border-slate-300'}`}>
+            {/* 卡片头部 */}
+            <div 
+              onClick={() => setExpandedId(expandedId === api.id ? null : api.id)}
+              className={`p-5 flex items-center justify-between cursor-pointer select-none transition-colors ${expandedId === api.id ? 'bg-slate-50 border-b border-slate-100' : 'bg-white'}`}
+            >
+              <div className="flex items-center gap-4">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded tracking-tighter ${api.method === 'POST' ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
+                  {api.method}
+                </span>
+                <span className="font-mono text-xs text-slate-500 hidden md:inline">{api.path}</span>
+                <h3 className="font-bold text-slate-700">{api.title}</h3>
+                <span className="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-widest scale-90 origin-left">{api.tag}</span>
               </div>
-
-              <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">请求体 (Body - JSON)</h4>
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-500">
-                      <th className="py-2 font-medium">参数名</th>
-                      <th className="py-2 font-medium">必填</th>
-                      <th className="py-2 font-medium">说明</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-slate-100">
-                      <td className="py-2 font-mono text-xs text-slate-700">imageBase64</td>
-                      <td className="py-2 text-red-500 text-xs">是</td>
-                      <td className="py-2 text-slate-500 text-xs">图片的 Base64 编码数据</td>
-                    </tr>
-                    <tr className="border-b border-slate-100">
-                      <td className="py-2 font-mono text-xs text-slate-700">userMessage</td>
-                      <td className="py-2 text-red-500 text-xs">是</td>
-                      <td className="py-2 text-slate-500 text-xs">针对图片提出的任务或问题指令</td>
-                    </tr>
-                    <tr className="border-b border-slate-100">
-                      <td className="py-2 font-mono text-xs text-slate-700">sessionid</td>
-                      <td className="py-2 text-slate-400 text-xs">否</td>
-                      <td className="py-2 text-slate-500 text-xs">会话上下文标识符</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div className="flex items-center gap-3 text-slate-400 hover:text-blue-600 transition-colors">
+                <span className="text-[10px] uppercase font-bold tracking-widest">{expandedId === api.id ? '收起详情' : '展开文档与调试'}</span>
+                <svg className={`w-4 h-4 transition-transform duration-300 ${expandedId === api.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* 右侧：API 调试器 */}
-        <div className="lg:w-1/2 flex flex-col gap-4 overflow-hidden">
-          <div className="card p-6 flex flex-col h-full border-t-4 border-tech-blue">
-            <h3 className="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">在线调试 (Playground)</h3>
-            
-            <div className="space-y-4 flex-grow overflow-y-auto pr-2 pb-4">
-              {/* X-API-KEY */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">X-API-KEY <span className="text-red-500">*</span></label>
-                <input 
-                  type="text" 
-                  value={apiKey}
-                  onChange={e => setApiKey(e.target.value)}
-                  placeholder="请输入用于限流的 API KEY"
-                  className="w-full text-sm p-2 border border-slate-300 rounded focus:border-tech-blue focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* sessionid */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1">Session ID</label>
-                  <input 
-                    type="text" 
-                    value={sessionId}
-                    onChange={e => setSessionId(e.target.value)}
-                    className="w-full text-sm p-2 border border-slate-300 rounded focus:border-tech-blue focus:outline-none transition-colors font-mono"
-                  />
-                </div>
-                {/* userMessage */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1">User Message <span className="text-red-500">*</span></label>
-                  <input 
-                    type="text" 
-                    value={userMessage}
-                    onChange={e => setUserMessage(e.target.value)}
-                    placeholder="例如：提取证书编号"
-                    className="w-full text-sm p-2 border border-slate-300 rounded focus:border-tech-blue focus:outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* imageBase64 */}
-              <div className="flex flex-col">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-slate-600">Image Base64 <span className="text-red-500">*</span></label>
-                  <label className="text-[10px] text-tech-blue hover:underline cursor-pointer font-normal flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                    选择本地图片 (自动转换)
-                    <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                  </label>
-                </div>
-                <textarea 
-                  value={imageBase64}
-                  onChange={e => setImageBase64(e.target.value)}
-                  placeholder="可在此直接粘贴 Base64 编码，或点击右上方选择图片自动生成..."
-                  rows={4}
-                  className="w-full text-sm p-2 border border-slate-300 rounded focus:border-tech-blue focus:outline-none transition-colors font-mono text-[10px] resize-none"
-                />
-              </div>
-
-              {/* Action */}
-              <div className="pt-2">
-                <button 
-                  onClick={handleSend}
-                  disabled={loading}
-                  className={`w-full py-2.5 rounded text-white text-sm font-bold transition-all flex justify-center items-center gap-2 ${loading ? 'bg-tech-blue/60 cursor-wait' : 'bg-tech-blue hover:bg-blue-700 shadow-md hover:shadow-lg'}`}
-                >
-                  {loading && (
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  )}
-                  {loading ? '模型处理中...' : '发起调用 (Send Request)'}
-                </button>
-              </div>
-
-              {/* Response */}
-              <div className="pt-4 border-t border-slate-100 flex-grow flex flex-col">
-                <label className="block text-xs font-bold text-slate-600 mb-2">Response</label>
-                <div className="bg-slate-900 rounded p-4 h-48 overflow-y-auto flex-grow relative">
-                  {response ? (
-                    <pre className="text-[11px] font-mono text-green-400 whitespace-pre-wrap break-all">
-                      {JSON.stringify(response, null, 2)}
-                    </pre>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-slate-600 text-xs font-mono">
-                      等待发起调用...
+            {/* 详细内容区 */}
+            <div className={`transition-all duration-500 ease-in-out ${expandedId === api.id ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+              <div className="p-8 flex flex-col xl:flex-row gap-12 bg-white text-slate-800">
+                
+                {/* 1. 文档侧 */}
+                <div className="xl:w-1/2 space-y-8">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                        <h3 className="text-xl font-bold text-slate-900">{api.title}</h3>
+                        <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-widest">v1.0 / Stable</span>
                     </div>
-                  )}
+                    <p className="text-sm text-slate-500 leading-relaxed">{api.description}</p>
+                  </div>
+
+                  {/* Endpoint 区块 */}
+                  <section>
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">请求地址 (Endpoint)</h4>
+                    <div className="bg-slate-900 text-blue-300 p-4 rounded border border-slate-700 font-mono text-xs flex justify-between items-center group">
+                        <div className="flex items-center gap-3">
+                            <span className="text-green-400 font-bold">POST</span>
+                            <span>{api.path}</span>
+                        </div>
+                        <button className="text-slate-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold underline decoration-dotted underline-offset-4">COPY URL</button>
+                    </div>
+                  </section>
+
+                  {/* 参数表格 */}
+                  <div className="space-y-6 text-slate-800">
+                    <section>
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Headers</h4>
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b border-slate-200 text-slate-500 uppercase">
+                                    <th className="py-2 font-bold w-1/3">Key</th>
+                                    <th className="py-2 font-bold w-1/6">Type</th>
+                                    <th className="py-2 font-bold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-slate-700">
+                                <tr className="border-b border-slate-50">
+                                    <td className="py-3 font-mono text-blue-600 font-bold">X-API-KEY</td>
+                                    <td className="py-3 italic">string</td>
+                                    <td className="py-3">系统鉴权与限流标识（必填）</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Request Body (JSON)</h4>
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b border-slate-200 text-slate-500 uppercase">
+                                    <th className="py-2 font-bold w-1/3">Field</th>
+                                    <th className="py-2 font-bold w-1/6">Type</th>
+                                    <th className="py-2 font-bold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-slate-700">
+                                {api.id === 'vision-api' ? (
+                                    <>
+                                        <tr className="border-b border-slate-50">
+                                            <td className="py-3 font-mono text-blue-600 font-bold">imageBase64</td>
+                                            <td className="py-3 italic">string</td>
+                                            <td className="py-3">图片的 Base64 数据字符串（必填）</td>
+                                        </tr>
+                                        <tr className="border-b border-slate-50">
+                                            <td className="py-3 font-mono text-blue-600 font-bold">userMessage</td>
+                                            <td className="py-3 italic">string</td>
+                                            <td className="py-3">针对图片的提问或指令（必填）</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-3 font-mono text-blue-600 font-bold">sessionid</td>
+                                            <td className="py-3 italic">string</td>
+                                            <td className="py-3">会话 ID，用于上下文追踪（可选）</td>
+                                        </tr>
+                                    </>
+                                ) : (
+                                    <tr><td colSpan={3} className="py-8 text-center text-slate-300 italic">参数文档整理中...</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </section>
+                  </div>
                 </div>
+
+                {/* 2. 调试侧 (Playground) */}
+                <div className="xl:w-1/2">
+                    <div className="card p-6 bg-slate-50 border-2 border-slate-200 border-dashed relative">
+                        {/* 显眼的调试标签 */}
+                        <div className="absolute -top-3 right-6 bg-blue-600 text-white text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest shadow-lg">
+                          Online Debugger
+                        </div>
+                        
+                        {api.id === 'vision-api' ? (
+                            <div className="space-y-5">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">X-API-Key</label>
+                                        <input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="必填密钥" className="w-full text-xs p-2.5 border border-slate-300 rounded shadow-sm outline-none focus:border-blue-600 bg-white text-slate-900" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">UserMessage</label>
+                                        <input type="text" value={userMessage} onChange={e=>setUserMessage(e.target.value)} className="w-full text-xs p-2.5 border border-slate-300 rounded shadow-sm outline-none focus:border-blue-600 bg-white text-slate-900" />
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">imageBase64</label>
+                                        <label className="text-[10px] text-white bg-blue-600 hover:bg-blue-700 cursor-pointer font-bold flex items-center gap-1.5 px-3 py-1.5 rounded transition-all shadow-md active:scale-95">
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                            SELECT IMAGE
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                                        </label>
+                                    </div>
+                                    <textarea value={imageBase64} onChange={e=>setImageBase64(e.target.value)} rows={4} className="w-full text-[10px] font-mono p-3 border border-slate-300 rounded bg-white shadow-inner resize-none text-slate-800" placeholder="Base64 Data content..." />
+                                </div>
+
+                                {/* 这里改为了深蓝色背景 + 白色文字的强对比按钮 */}
+                                <button 
+                                    onClick={handleSendVision}
+                                    disabled={loading}
+                                    className={`w-full py-3 rounded text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-lg active:scale-[0.98] ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-500 ring-offset-2'}`}
+                                >
+                                    {loading ? 'Processing...' : 'Execute Request'}
+                                </button>
+
+                                <div className="pt-2">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-2 block">Response Payload</label>
+                                    <div className="bg-slate-900 rounded p-5 h-56 overflow-y-auto font-mono text-[10px] border border-slate-800 shadow-2xl relative">
+                                        {response ? (
+                                            <pre className="text-green-400 whitespace-pre-wrap break-all leading-relaxed">
+                                                {JSON.stringify(response, null, 2)}
+                                            </pre>
+                                        ) : (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 italic">
+                                                <svg className="w-8 h-8 mb-2 opacity-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                Ready for testing...
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="h-96 flex flex-col items-center justify-center text-slate-400 text-xs italic gap-3">
+                                <svg className="w-12 h-12 opacity-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                                Playground under development
+                            </div>
+                        )}
+                    </div>
+                </div>
+
               </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

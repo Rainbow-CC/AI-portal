@@ -25,6 +25,8 @@ public class ChatService {
         Constants.baseHttpApiUrl = "https://dashscope.aliyuncs.com/api/v1";
     }
 
+    private static final String MODELCODE = "qwen3.5-flash";
+
     /**
      * 使用 Base64 图片调用多模态大模型
      *
@@ -50,11 +52,11 @@ public class ChatService {
 
             MultiModalConversationParam param = MultiModalConversationParam.builder()
                     .apiKey(System.getenv("DASHSCOPE_API_KEY"))
-                    .model("qwen3.6-plus")
+                    .model(MODELCODE)
                     .messages(Collections.singletonList(message))
                     .build();
 
-            log.debug("Calling DashScope MultiModalConversation with model: qwen3.6-plus");
+            log.debug("Calling DashScope MultiModalConversation with model: {}",MODELCODE);
             MultiModalConversationResult result = conv.call(param);
             
             if (result.getOutput() != null && 

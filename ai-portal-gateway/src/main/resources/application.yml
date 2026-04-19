@@ -12,6 +12,8 @@ spring:
       port: 6379
   cloud:
     gateway:
+      httpserver:
+        accesslog: true
       routes:
         - id: ai-service-route
           uri: https://api.example-bank.com
@@ -50,7 +52,10 @@ resilience4j:
         timeoutDuration: 60s
 
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
-        include: health,metrics,prometheus
+        include: "*"
