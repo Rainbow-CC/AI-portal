@@ -62,3 +62,40 @@ ai-portal-ui/
 *   **组件优先**: 优先使用 Ant Design 组件以保证一致性，通过 Tailwind 调整间距与细微布局。
 *   **响应式**: 所有新开发的视图必须适配 `md (768px)` 及以上分辨率。
 *   **Mock 数据**: 在后端接口未就绪前，在 `services/` 层统一使用 Mock 实现。
+
+## 6. 生产环境部署 (Production Deployment)
+
+在生产环境中，前端通过 `npm run build` 生成的静态文件推荐使用 **Nginx** 进行托管。
+
+### 6.1 Nginx 核心配置示例
+
+由于 `vite.config.ts` 中的 `proxy` 仅在开发模式下生效，生产环境需配置 Nginx 实现请求转发：
+
+```nginx
+server {
+    listen       80;
+    server_name  ai-portal.example.com;
+
+    # 1. 前端静态资源托管
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri $uri/ /index.html; # 确保 SPA 路由正常跳转
+    }
+
+    # 2. API 接口反向代理 (对应开发环境的 Vite Proxy)
+    location /api/ {
+        proxy_pass http://ai-portal-gateway:8080/; # 指向 Spring Cloud Gateway 地址
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        
+        # 针对大文件（如 Base64 图片）上传的配置
+        client_max_body_size 10m;
+    }
+}
+```
+
+### 6.2 部署注意事项
+1. **Body 大小限制**：由于多模态接口涉及 Base64 图片传输，务必在 Nginx 中配置 `client_max_body_size`（如 `10m`），否则会报 413 Payload Too Large。
+2. **路由模式**：React Router 使用的是 HTML5 History 模式，`try_files` 配置是防止刷新页面出现 404 的关键。
