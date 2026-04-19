@@ -27,6 +27,13 @@ spring:
                 name: aiCircuitBreaker
                 fallbackUri: forward:/fallback
 
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    root: INFO
+    com.ai.portal.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
+
 resilience4j:
   circuitbreaker:
     instances:
