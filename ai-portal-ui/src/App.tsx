@@ -13,6 +13,7 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [breadcrumb, setBreadcrumb] = useState('数据大盘');
   const [caseId, setCaseId] = useState<'contract' | 'aml' | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // 健康状态: 'UP' | 'DOWN' | 'LOADING'
   const [healthStatus, setHealthStatus] = useState<'UP' | 'DOWN' | 'LOADING'>('LOADING');
@@ -41,6 +42,7 @@ function App() {
   const showView = (view: View, label?: string) => {
     setCurrentView(view);
     if (label) setBreadcrumb(label);
+    setIsSidebarOpen(false); // 移动端点击后自动关闭侧边栏
   };
 
   const showCaseDetail = (id: 'contract' | 'aml') => {
@@ -57,19 +59,40 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden w-full">
+    <div className="flex h-screen overflow-hidden w-full relative">
+      {/* 0. 移动端遮罩层 */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* 1. 侧边导航栏 */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-slate-50">
-          <div className="w-8 h-8 bg-tech-blue rounded-sm flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0
+        transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:relative md:translate-x-0
+      `}>
+        <div className="p-6 flex items-center justify-between border-b border-slate-50">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-tech-blue rounded-sm flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span className="text-lg font-bold text-tech-blue">AI Portal</span>
           </div>
-          <span className="text-lg font-bold text-tech-blue">AI Portal</span>
+          {/* 移动端关闭按钮 */}
+          <button className="md:hidden p-1 text-slate-400" onClick={() => setIsSidebarOpen(false)}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        <nav className="flex-grow mt-4 px-3 space-y-1">
+        <nav className="flex-grow mt-4 px-3 space-y-1 overflow-y-auto">
           {Object.entries(viewNames).map(([key, label]) => (
             <button
               key={key}
@@ -102,17 +125,28 @@ function App() {
       {/* 主体内容区 */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F8FAFC]">
         {/* 头部 Breadcrumb */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0 w-full">
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span>控制台</span>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-900 font-medium">{breadcrumb}</span>
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0 w-full">
+          <div className="flex items-center gap-3">
+            {/* 移动端汉堡菜单按钮 */}
+            <button 
+              className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-lg"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2 text-sm text-slate-400 overflow-hidden">
+              <span className="hidden sm:inline">控制台</span>
+              <span className="hidden sm:inline text-slate-300">/</span>
+              <span className="text-slate-900 font-medium truncate">{breadcrumb}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={checkHealth}
               title="点击手动刷新系统状态"
-              className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-full transition-all border ${
+              className={`flex items-center gap-2 text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-all border ${
                 healthStatus === 'UP' 
                   ? 'text-green-600 bg-green-50 border-green-100 hover:bg-green-100 shadow-sm' 
                   : healthStatus === 'DOWN'
@@ -120,10 +154,11 @@ function App() {
                     : 'text-slate-400 bg-slate-50 border-slate-100 animate-pulse'
               }`}
             >
-              <span className={`w-2 h-2 rounded-full ${
+              <span className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
                 healthStatus === 'UP' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : healthStatus === 'DOWN' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-slate-300'
               }`}></span>
-              {healthStatus === 'UP' ? '系统连接正常' : healthStatus === 'DOWN' ? '网关连接断开' : '正在检测状态...'}
+              <span className="hidden xs:inline">{healthStatus === 'UP' ? '系统连接正常' : healthStatus === 'DOWN' ? '网关连接断开' : '正在检测状态...'}</span>
+              <span className="xs:hidden">{healthStatus === 'UP' ? '网关连接' : healthStatus === 'DOWN' ? '网关断开' : '...'}</span>
             </button>
             <button className="p-2 text-slate-400 hover:text-tech-blue">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +169,7 @@ function App() {
         </header>
 
         {/* 视图容器 */}
-        <div className="flex-1 overflow-y-auto p-8 bg-[#F8FAFC] w-full">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC] w-full">
           {currentView === 'dashboard' && <Dashboard />}
           {currentView === 'capability' && <Capability />}
           {currentView === 'cases' && <Cases onShowDetail={showCaseDetail} />}
