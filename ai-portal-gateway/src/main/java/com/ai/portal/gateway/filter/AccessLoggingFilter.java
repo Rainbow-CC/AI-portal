@@ -23,9 +23,10 @@ public class AccessLoggingFilter implements GlobalFilter, Ordered {
 
         return chain.filter(exchange).then(Mono.fromRunnable(() -> {
             long duration = System.currentTimeMillis() - startTime;
-            Integer statusCode = exchange.getResponse().getStatusCode() != null 
-                ? exchange.getResponse().getStatusCode().value() 
-                : null;
+            Integer statusCode = null;
+            if (exchange.getResponse().getStatusCode() != null) {
+                statusCode = exchange.getResponse().getStatusCode().value();
+            }
             
             log.info("Access Log: [ClientKey: {}] {} {} - Status: {} - Time: {}ms", 
                 apiKey != null ? apiKey : "ANONYMOUS", 
