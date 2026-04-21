@@ -1,0 +1,9 @@
+# Docker Build Context Ignore List
+target/
+**/target/
+.idea/
+.git/
+node_modules/
+*.iml
+*.log
+.DS_Store
