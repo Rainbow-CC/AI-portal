@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Redis service used by both Gateway (Rate Limiter) and potentially Admin
+  redis:
+    image: redis:alpine
+    container_name: ai-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ai-portal-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Admin backend service (port 8081)
+  admin:
+    image: ai-portal-admin:v1
+    container_name: ai-admin
+    # Automatically build if image doesn't exist
+    build:
+      context: .
+      dockerfile: ai-portal-admin/Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+    ports:
+      - "8081:8081"
+    networks:
+      - ai-portal-net
+
+  # Gateway service (port 8080)
+  gateway:
+    image: ai-portal-gateway:v1
+    container_name: ai-gateway
+    build:
+      context: .
+      dockerfile: ai-portal-gateway/Dockerfile
+    depends_on:
+      admin:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    environment:
+      # Use service names instead of localhost
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      # Dynamically override the route URI in application.yml
+      # Format: SPRING_CLOUD_GATEWAY_ROUTES_<index>_URI
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://admin:8081
+    ports:
+      - "8080:8080"
+    networks:
+      - ai-portal-net
+
+# Define the bridge network for container-to-container communication
+networks:
+  ai-portal-net:
+    driver: bridge
