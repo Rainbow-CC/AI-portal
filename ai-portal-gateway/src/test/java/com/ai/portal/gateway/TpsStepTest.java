@@ -20,7 +20,7 @@ public class TpsStepTest {
     private static final String TARGET_URL = "http://localhost:8080/v1/ai/fast";
     private static final String API_KEY = "step-test-key-v2";
     private static final int[] CONCURRENCY_STEPS = {10, 50, 100, 150, 200, 300, 500};
-    private static final int DURATION_PER_STEP_MS = 3000; // 每个梯度持续 3 秒
+    private static final int DURATION_PER_STEP_MS = 10000; // 每个梯度持续 3 秒
 
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClient.newBuilder()

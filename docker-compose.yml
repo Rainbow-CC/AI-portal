@@ -50,9 +50,8 @@ services:
       # Use service names instead of localhost
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
-      # Dynamically override the route URI in application.yml
-      # Format: SPRING_CLOUD_GATEWAY_ROUTES_<index>_URI
-      - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://admin:8081
+      # Dynamically override the route URI via placeholder
+      - AI_SERVICE_URL=http://admin:8081
     ports:
       - "8080:8080"
     networks:

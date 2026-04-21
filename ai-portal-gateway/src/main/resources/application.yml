@@ -16,7 +16,7 @@ spring:
         accesslog: true
       routes:
         - id: ai-service-route
-          uri: http://localhost:8081
+          uri: ${AI_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/v1/ai/**
           filters:
