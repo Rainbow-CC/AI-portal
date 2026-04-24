@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Redis service used by both Gateway (Rate Limiter) and potentially Admin
   redis:
@@ -29,6 +27,7 @@ services:
     environment:
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
     ports:
       - "8081:8081"
     networks:
@@ -54,6 +53,21 @@ services:
       - AI_SERVICE_URL=http://admin:8081
     ports:
       - "8080:8080"
+    networks:
+      - ai-portal-net
+
+  # Frontend UI service (port 80)
+  ui:
+    image: ai-portal-ui:v1
+    container_name: ai-ui
+    build:
+      context: .
+      dockerfile: ai-portal-ui/Dockerfile
+    depends_on:
+      gateway:
+        condition: service_started
+    ports:
+      - "80:80"
     networks:
       - ai-portal-net
 
