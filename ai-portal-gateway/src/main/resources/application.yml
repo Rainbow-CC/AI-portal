@@ -18,7 +18,7 @@ spring:
         - id: ai-service-route
           uri: ${AI_SERVICE_URL:http://localhost:8081}
           predicates:
-            - Path=/v1/ai/**
+            - Path=/v1/ai/**,/api/chat/**
           filters:
             - StripPrefix=1
             - name: RequestRateLimiter

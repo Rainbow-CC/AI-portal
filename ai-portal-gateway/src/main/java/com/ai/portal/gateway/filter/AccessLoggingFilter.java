@@ -1,5 +1,6 @@
 package com.ai.portal.gateway.filter;
 
+import com.ai.portal.common.constant.AuthConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -18,7 +19,7 @@ public class AccessLoggingFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getPath().pathWithinApplication().value();
         String method = request.getMethod().name();
-        String apiKey = request.getHeaders().getFirst("X-API-KEY");
+        String apiKey = request.getHeaders().getFirst(AuthConstants.HEADER_API_KEY);
         long startTime = System.currentTimeMillis();
 
         return chain.filter(exchange).then(Mono.fromRunnable(() -> {

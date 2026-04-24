@@ -19,7 +19,6 @@ function App() {
   const [healthStatus, setHealthStatus] = useState<'UP' | 'DOWN' | 'LOADING'>('LOADING');
 
   const checkHealth = async () => {
-    setHealthStatus('LOADING');
     try {
       const res = await fetch(`/actuator/health?t=${Date.now()}`);
       if (res.ok) {
@@ -28,13 +27,13 @@ function App() {
       } else {
         setHealthStatus('DOWN');
       }
-    } catch (err) {
+    } catch {
       setHealthStatus('DOWN');
     }
   };
 
   useEffect(() => {
-    checkHealth();
+    setTimeout(checkHealth, 0);
     const timer = setInterval(checkHealth, 60000); // 1分钟轮询
     return () => clearInterval(timer);
   }, []);

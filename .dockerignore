@@ -1,9 +1,21 @@
-# Docker Build Context Ignore List
-target/
+# 排除 Java 相关
 **/target/
-.idea/
-.git/
-node_modules/
-*.iml
+**/.idea/
+**/.mvn/
+**/.classpath
+**/.project
+**/.settings/
 *.log
-.DS_Store
+
+# 排除前端相关
+**/node_modules/
+**/dist/
+**/.vscode/
+
+# 排除 Docker 相关
+.dockerignore
+docker-compose.yml
+
+# 排除 Git 相关
+.git
+.gitignore

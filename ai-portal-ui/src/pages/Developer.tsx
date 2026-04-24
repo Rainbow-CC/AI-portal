@@ -16,11 +16,11 @@ const Developer = () => {
 
   // --- Vision API 专用状态 ---
   const [apiKey, setApiKey] = useState('');
-  const [sessionId, setSessionId] = useState(`sess-${Date.now()}`);
+  const [sessionId] = useState(() => `sess-${Date.now()}`);
   const [userMessage, setUserMessage] = useState('提取图片中的核心信息');
   const [imageBase64, setImageBase64] = useState('');
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<unknown>(null);
 
   const apiList: ApiItem[] = [
     {
@@ -63,8 +63,9 @@ const Developer = () => {
       });
       const data = await res.json();
       setResponse(data);
-    } catch (err: any) {
-      setResponse({ error: err.message || "请求失败" });
+    } catch (err: unknown) {
+      const error = err as Error;
+      setResponse({ error: error.message || "请求失败" });
     } finally {
       setLoading(false);
     }

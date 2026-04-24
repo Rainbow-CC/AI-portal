@@ -12,9 +12,9 @@ COPY . .
 # Execute Maven build with BuildKit cache mount for local repository
 # -pl ai-portal-admin: Build only the admin module
 # -am (also make): Build all projects required by the specified projects
-# -DskipTests: Skip unit tests for faster build
+# -Dmaven.test.skip=true: Skip test compilation and execution for faster, more robust builds
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn clean package -pl ai-portal-admin -am -DskipTests
+    mvn clean package -pl ai-portal-admin -am -Dmaven.test.skip=true
 
 # ==========================================
 # Phase 2: Runner (JRE 17 Alpine)
@@ -25,7 +25,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Copy only the final artifact from the builder stage
-COPY --from=builder /build/ai-portal-admin/target/ai-portal-admin-*.jar app.jar
+COPY --from=builder /build/ai-portal-admin/target/ai-portal-admin.jar app.jar
 
 # Application listens on port 8081 by default
 EXPOSE 8081
