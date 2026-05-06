@@ -1,12 +1,24 @@
 @import "tailwindcss";
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-tech-blue: #0052D9;
+  
+  --animate-fade-in: fadeIn 0.3s ease-out;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+}
 
 :root {
   font-family: 'Inter', -apple-system, sans-serif;
   background-color: #F8FAFC;
   color: #1E293B;
 }
+... (rest of the file)
 
 html,
 body,
@@ -24,8 +36,8 @@ body {
 
 .sidebar-active {
   background-color: #EEF2FF;
-  color: #0052D9;
-  border-right: 3px solid #0052D9;
+  color: var(--color-tech-blue);
+  border-right: 3px solid var(--color-tech-blue);
 }
 
 .card {

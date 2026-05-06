@@ -22,3 +22,4 @@ description: Guidelines and standards for the AI Portal project. Use when develo
 ## 关键资源
 *   **项目架构**: 详见 [architecture.md](references/architecture.md)。
 *   **UI/UX 规范**: 详见 [ui-standards.md](references/ui-standards.md)。
+*   **Tailwind v4 指南**: 详见 [tailwind-v4-guide.md](references/tailwind-v4-guide.md)。

@@ -12,7 +12,7 @@ type View = 'dashboard' | 'capability' | 'cases' | 'case-detail' | 'developer' |
 function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [breadcrumb, setBreadcrumb] = useState('数据大盘');
-  const [caseId, setCaseId] = useState<'contract' | 'aml' | null>(null);
+  const [caseId, setCaseId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // 健康状态: 'UP' | 'DOWN' | 'LOADING'
@@ -44,7 +44,7 @@ function App() {
     setIsSidebarOpen(false); // 移动端点击后自动关闭侧边栏
   };
 
-  const showCaseDetail = (id: 'contract' | 'aml') => {
+  const showCaseDetail = (id: string) => {
     setCaseId(id);
     showView('case-detail', '案例详情');
   };
