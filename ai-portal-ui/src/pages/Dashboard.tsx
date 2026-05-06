@@ -1,25 +1,55 @@
-import StatCard from '../components/StatCard';
+import { useState, useEffect } from 'react';
+import TopBarChart from '../components/TopBarChart';
+
+interface StatItem {
+  name: string;
+  value: number;
+}
 
 const Dashboard = () => {
+  const [topSystems, setTopSystems] = useState<StatItem[]>([]);
+  const [topApis, setTopApis] = useState<StatItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      const [systemsRes, apisRes] = await Promise.all([
+        fetch('/api/admin/stats/top-systems'),
+        fetch('/api/admin/stats/top-apis')
+      ]);
+
+      if (systemsRes.ok && apisRes.ok) {
+        const systems = await systemsRes.json();
+        const apis = await apisRes.json();
+        setTopSystems(systems);
+        setTopApis(apis);
+      }
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    const timer = setInterval(fetchData, 30000); // 30秒更新一次
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="space-y-8 animate-fade-in w-full max-w-full">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
-        <StatCard label="今日累计请求" value="156,204" subValue="↑ 12.5% 较昨日" subColor="text-green-500" />
-        <StatCard label="网关运行状态" value="稳定运行" subValue="Uptime: 142d 5h" pulse />
-        <StatCard label="母行能力集成" value="24 核" subValue="含 4 个 Beta 阶段能力" />
-        <StatCard label="系统平均可用性" value="99.98%" subValue="实时监控统计" border />
-      </div>
-      <div className="card p-6">
-        <h3 className="font-bold mb-6">网关调用趋势 (近7日)</h3>
-        <div className="h-64 w-full flex items-end gap-1">
-          {[60, 70, 65, 85, 95, 75, 90].map((h, i) => (
-            <div
-              key={i}
-              style={{ height: `${h}%` }}
-              className={`flex-grow ${i === 6 ? 'bg-tech-blue/20' : 'bg-blue-50'} border-t-2 border-tech-blue transition-all cursor-pointer relative group`}
-            ></div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {loading && topSystems.length === 0 ? (
+          <div className="card p-12 flex items-center justify-center text-slate-400 lg:col-span-2">
+            数据加载中...
+          </div>
+        ) : (
+          <>
+            <TopBarChart title="发起请求系统 TOP 10" data={topSystems} />
+            <TopBarChart title="被调用接口 TOP 10" data={topApis} />
+          </>
+        )}
       </div>
     </div>
   );

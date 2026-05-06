@@ -30,6 +30,10 @@ spring:
               args:
                 name: aiCircuitBreaker
                 fallbackUri: forward:/fallback
+        - id: admin-stats-route
+          uri: ${AI_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/admin/**
 
 logging:
   config: classpath:logback-spring.xml
