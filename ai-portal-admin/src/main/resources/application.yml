@@ -19,6 +19,3 @@ logging:
   level:
     root: INFO
     com.ai.portal.admin: DEBUG
-
-dashscope:
-  api-key: ${DASHSCOPE_API_KEY:}

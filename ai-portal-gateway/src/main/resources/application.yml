@@ -5,7 +5,7 @@ spring:
   application:
     name: ai-portal-gateway
   codec:
-    max-in-memory-size: 20MB
+    max-in-memory-size: 50MB
   data:
     redis:
       host: localhost
@@ -14,51 +14,69 @@ spring:
     gateway:
       httpserver:
         accesslog: true
+      # 默认连接池配置（适用于 Admin 等快响应请求）
+      httpclient:
+        connect-timeout: 2000
+        response-timeout: 5s
+        pool:
+          type: fixed
+          max-connections: 100
+          acquire-timeout: 5000
       routes:
-        - id: ai-service-route
-          uri: ${AI_SERVICE_URL:http://localhost:8081}
+        - id: ai-aggregation-route
+          uri: ${AI_AGGREGATION_URL:http://localhost:8082}
           predicates:
-            - Path=/v1/ai/**,/api/chat/**
+            - Path=/api/chat/**
           filters:
             - StripPrefix=1
             - name: RequestRateLimiter
               args:
-                redis-rate-limiter.replenishRate: 150
-                redis-rate-limiter.burstCapacity: 200
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
                 key-resolver: "#{@apiKeyResolver}"
+            - name: Bulkhead
+              args:
+                name: aiBulkhead
             - name: CircuitBreaker
               args:
                 name: aiCircuitBreaker
                 fallbackUri: forward:/fallback
         - id: admin-stats-route
-          uri: ${AI_SERVICE_URL:http://localhost:8081}
+          uri: ${ADMIN_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/admin/**
+          filters:
+            - name: Bulkhead
+              args:
+                name: adminBulkhead
 
 logging:
   config: classpath:logback-spring.xml
   level:
     root: INFO
     com.ai.portal.gateway: DEBUG
-    org.springframework.cloud.gateway: INFO
 
 resilience4j:
+  bulkhead:
+    instances:
+      adminBulkhead:
+        maxConcurrentCalls: 100
+        maxWaitDuration: 0
+      aiBulkhead:
+        maxConcurrentCalls: 20 # 严格限制 AI 并发，防止拖垮网关
+        maxWaitDuration: 0
   circuitbreaker:
     instances:
       aiCircuitBreaker:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10000
-        permittedNumberOfCallsInHalfOpenState: 3
   timelimiter:
     instances:
       aiCircuitBreaker:
         timeoutDuration: 60s
 
 management:
-  endpoint:
-    health:
-      show-details: always
   endpoints:
     web:
       exposure:

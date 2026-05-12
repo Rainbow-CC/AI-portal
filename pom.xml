@@ -21,6 +21,7 @@
         <module>ai-portal-common</module>
         <module>ai-portal-gateway</module>
         <module>ai-portal-admin</module>
+        <module>ai-portal-ai-service</module>
     </modules>
 
     <properties>
